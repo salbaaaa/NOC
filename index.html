@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tablero General - Blanco Predeterminado</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* --- VARIABLES DE COLORES --- */
+        :root {
+            /* --- MODO CLARO (AHORA ES EL PREDETERMINADO) --- */
+            --bg-body: #f4f6f8; 
+            --text-main: #333333;
+            --text-title: #2c3e50;
+            --card-bg: #ffffff;
+            --card-border: #d1d5db;
+            --header-border: #d1d5db;
+            --sidebar-bg: #ffffff;
+            --sidebar-hover: #f8f9fa;
+            --sidebar-text: #555555;
+            --sidebar-icon: #555555;
+            --sidebar-divider: #e9ecef;
+            
+            --client-title-bg: #072147; 
+            
+            --iframe-filter: none;
+            --popover-bg: #ffffff;
+        }
+
+        /* --- CLASE PARA MODO OSCURO (SE ACTIVA CON BOTÓN) --- */
+        body.dark-mode {
+            --bg-body: #1d1c1f;
+            --text-main: #e0e0e0;
+            --text-title: #ffffff;
+            --card-bg: #212025;
+            --card-border: #333;
+            --header-border: #333;
+            --sidebar-bg: #0e1c2e;
+            --sidebar-hover: #13233a; 
+            --sidebar-text: #b0bccc;
+            --sidebar-icon: #8a96a3; 
+            --sidebar-divider: #2a3b52;
+            
+            --iframe-filter: invert(93%) hue-rotate(180deg) contrast(90%);
+            --popover-bg: #212025; 
+        }
+
+        /* --- ESTILOS GENERALES --- */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            margin: 0;
+            padding: 10px;
+            box-sizing: border-box;
+            padding-left: 190px; 
+            min-height: 100vh;   
+            display: flex;       
+            flex-direction: column;
+            justify-content: center; 
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        h1 {
+            text-align: center;
+            color: var(--text-title);
+            margin: 20px 0;
+            font-weight: 300;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            font-size: 1.5rem;
+            border-bottom: 1px solid var(--header-border);
+            padding-bottom: 10px;
+        }
+
+        /* --- SIDEBAR FIJO --- */
+        .sidebar {
+            position: fixed; 
+            left: 0; top: 0; height: 100%;
+            width: 170px; 
+            background-color: var(--sidebar-bg);
+            overflow: visible; 
+            z-index: 1000; 
+            box-shadow: 2px 0 10px rgba(0,0,0,0.2);
+            display: flex;
+            flex-direction: column; 
+            transition: background-color 0.3s; 
+        }
+
+        .sidebar-logo-container {
+            padding: 25px 10px;
+            text-align: center;
+            border-bottom: none; 
+        }
+
+        .sidebar-logo {
+            max-width: 130px; 
+            height: auto;
+            display: block;
+            margin: 0 auto; 
+        }
+
+        .sidebar-content {
+            padding: 20px 10px;
+            flex-grow: 1; 
+            position: relative;
+        }
+
+        .sidebar-footer {
+            padding: 15px 20px;
+            border-top: 1px solid var(--sidebar-divider);
+            background-color: rgba(0,0,0,0.05);
+            display: flex;
+            justify-content: space-between; 
+            align-items: center;
+        }
+
+        .footer-btn {
+            background: none; border: none; color: var(--sidebar-text);
+            font-size: 1.2rem; cursor: pointer; transition: color 0.3s, transform 0.2s; padding: 5px;
+            text-decoration: none; display: inline-flex;
+        }
+        .footer-btn:hover { color: var(--sidebar-icon); transform: scale(1.1); }
+
+        .sidebar-title {
+            font-size: 0.85rem; 
+            font-weight: bold;
+            color: var(--sidebar-icon);
+            margin-bottom: 15px; padding-bottom: 5px;
+            margin-top: 20px;
+            text-transform: uppercase; letter-spacing: 1px;
+            border-bottom: 1px solid var(--sidebar-divider);
+            opacity: 1; 
+        }
+        .sidebar-title:first-child { margin-top: 0; }
+
+        .sidebar-link {
+            color: var(--sidebar-text);
+            text-decoration: none;
+            font-size: 0.9rem; 
+            display: flex; align-items: center;
+            padding: 10px 5px;
+            cursor: pointer;
+            transition: color 0.3s, background-color 0.3s;
+            border-radius: 4px;
+            width: 100%; box-sizing: border-box;
+            position: relative;
+        }
+
+        .sidebar-link i.main-icon {
+            font-size: 1.1rem; margin-right: 12px;
+            width: 18px; text-align: center;
+            color: var(--sidebar-icon);
+            flex-shrink: 0; 
+        }
+
+        .sidebar-link span { 
+            opacity: 1; 
+            white-space: normal; 
+            line-height: 1.2;
+            flex-grow: 1;
+        }
+        
+        .sidebar-link:hover {
+            color: var(--text-title);
+            background-color: rgba(128,128,128,0.1);
+        }
+
+        /* --- CONTENEDOR DEL ITEM CON MENÚ DESPLEGABLE --- */
+        .sidebar-item-wrapper {
+            position: relative; 
+        }
+
+        /* --- EL RECUADRO AL COSTADO (SUBMENU) --- */
+        .sidebar-submenu {
+            display: none; 
+            position: absolute;
+            left: 100%; 
+            top: 0;
+            width: 260px; 
+            background-color: var(--popover-bg);
+            border: 1px solid var(--card-border);
+            border-left: 2px solid var(--sidebar-icon); 
+            box-shadow: 4px 4px 10px rgba(0,0,0,0.3);
+            padding: 10px 0; 
+            z-index: 9999;
+            border-radius: 0 4px 4px 0;
+        }
+
+        .sidebar-item-wrapper:hover .sidebar-submenu {
+            display: block;
+        }
+
+        /* --- Estilo de los links DENTRO del submenu --- */
+        .submenu-link {
+            color: var(--sidebar-text);
+            text-decoration: none;
+            font-size: 0.8rem;
+            display: flex; align-items: center;
+            padding: 8px 15px; 
+            cursor: pointer;
+            transition: color 0.2s, background-color 0.2s;
+        }
+
+        .submenu-link i {
+            font-size: 0.4rem; 
+            margin-right: 12px;
+            width: 10px; text-align: center;
+            color: inherit; 
+            opacity: 0.7; 
+            flex-shrink: 0; 
+        }
+
+        .submenu-link span { 
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .submenu-link:hover {
+            color: var(--text-title);
+            background-color: rgba(128,128,128,0.1);
+        }
+        .submenu-link:hover i {
+            opacity: 1; 
+        }
+
+
+        /* --- GRILLA --- */
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(360px, 1fr)); 
+            gap: 10px; width: 95%; max-width: 1800px; margin: 0 auto; 
+        }
+
+        /* --- TARJETAS --- */
+        .client-card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 0px; padding: 10px;
+            display: flex; flex-direction: column; height: auto; 
+            transition: background-color 0.3s;
+        }
+
+        .client-name {
+            text-align: center; font-size: 1rem; font-weight: bold;
+            margin: 0 0 10px 0;
+            background-color: var(--client-title-bg);
+            color: #ffffff !important;
+            text-transform: uppercase;
+            padding: 5px; border: 1px solid var(--card-border);
+            transition: background-color 0.3s;
+        }
+        .client-name a { text-decoration: none; color: inherit; }
+        .client-name a:hover { color: #a97eeb; } 
+
+        /* --- MÉTRICAS --- */
+        .metric-wrapper {
+            position: relative; width: 100%; height: 180px; 
+            margin-bottom: 10px;
+            border: 1px solid var(--card-border);
+            background-color: var(--card-bg);
+            border-radius: 0px; overflow: hidden; 
+        }
+        .metric-wrapper:last-child { margin-bottom: 0; }
+
+        .metric-wrapper iframe {
+            border: none; display: block;
+            filter: var(--iframe-filter);
+            transition: filter 0.3s;
+            width: 167%; height: 167%;
+            transform: scale(0.7); transform-origin: 0 0; 
+        }
+
+        .click-overlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 10; cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="sidebar" id="main-sidebar">
+        
+        <div class="sidebar-logo-container">
+            <img src="photos/Logo.png" alt="Logo" class="sidebar-logo">
+        </div>
+
+        <div class="sidebar-content">
+            <div class="sidebar-title">General</div>
+            
+            <div class="sidebar-item-wrapper">
+                <a href="#" class="sidebar-link">
+                    <i class="fas fa-chart-line main-icon"></i> 
+                    <span>Monitoreo general</span>
+                </a>
+            </div>
+            
+            <div class="sidebar-item-wrapper">
+                <a href="https://docs.google.com/spreadsheets/d/1FW3RPfUVLZ4j3LQMaGBtrPtuAHP8AaLLLT91JMVaths/edit?hl=es_419&gid=0#gid=0" target="_blank" class="sidebar-link">
+                    <i class="fas fa-file-alt main-icon"></i> 
+                    <span>Registro</span>
+                </a>
+            </div>
+
+            <div class="sidebar-item-wrapper">
+                <a href="https://2innovateit.jira.com/jira/software/c/projects/NOC/boards/549" target="_blank" class="sidebar-link">
+                    <i class="fas fa-table main-icon"></i> 
+                    <span>Tablero NOC</span>
+                </a>
+            </div>
+
+            <div class="sidebar-title">Plataformas</div>
+
+            <div class="sidebar-item-wrapper">
+                <a href="#" class="sidebar-link">
+                    <i class="fab fa-aws main-icon"></i> 
+                    <span>AWS</span>
+                    <i class="fas fa-caret-right" style="font-size:0.8rem; margin-left:auto; opacity:0.5;"></i>
+                </a>
+                <div class="sidebar-submenu" id="menu-aws">
+                </div>
+            </div>
+
+            <div class="sidebar-item-wrapper">
+                <a href="#" class="sidebar-link">
+                    <i class="fas fa-search main-icon"></i> 
+                    <span>OpenSearch</span>
+                    <i class="fas fa-caret-right" style="font-size:0.8rem; margin-left:auto; opacity:0.5;"></i>
+                </a>
+                <div class="sidebar-submenu" id="menu-opensearch">
+                </div>
+            </div>
+
+            <div class="sidebar-item-wrapper">
+                <a href="#" class="sidebar-link">
+                    <i class="fas fa-chart-area main-icon"></i> 
+                    <span>Grafana</span>
+                    <i class="fas fa-caret-right" style="font-size:0.8rem; margin-left:auto; opacity:0.5;"></i>
+                </a>
+                <div class="sidebar-submenu" id="menu-grafana">
+                </div>
+            </div>
+
+            <div class="sidebar-item-wrapper">
+                <a href="#" class="sidebar-link">
+                    <i class="fas fa-ship main-icon"></i> 
+                    <span>Argo</span>
+                    <i class="fas fa-caret-right" style="font-size:0.8rem; margin-left:auto; opacity:0.5;"></i>
+                </a>
+                <div class="sidebar-submenu" id="menu-argo">
+                </div>
+            </div>
+
+            <div class="sidebar-item-wrapper">
+                <a href="#" class="sidebar-link">
+                    <i class="fas fa-fire main-icon"></i> 
+                    <span>Prometheus</span>
+                    <i class="fas fa-caret-right" style="font-size:0.8rem; margin-left:auto; opacity:0.5;"></i>
+                </a>
+                <div class="sidebar-submenu" id="menu-prometheus">
+                </div>
+            </div>
+
+        </div>
+
+        <div class="sidebar-footer">
+            <button class="footer-btn" id="theme-btn" title="Cambiar Tema">
+                <i class="fas fa-moon"></i>
+            </button>
+
+            <a href="https://meet.google.com/hvt-zszo-ayw" class="footer-btn" target="_blank" title="Oficina">
+                 <i class="fas fa-video"></i>
+            </a>
+
+            <button class="footer-btn" title="Configuración">
+                <i class="fas fa-cog"></i>
+            </button>
+        </div>
+    </div>
+
+
+    <div class="grid-container" id="dashboard"></div>
+
+    <script>
+        // --- LOGICA DE ELEMENTOS ---
+        const themeBtn = document.getElementById('theme-btn');
+        const themeIcon = themeBtn.querySelector('i');
+        const body = document.body;
+
+        themeBtn.addEventListener('click', () => {
+            // AHORA alternamos la clase 'dark-mode'
+            body.classList.toggle('dark-mode');
+            
+            // Si está activo el modo oscuro, mostramos el SOL para volver a claro
+            if (body.classList.contains('dark-mode')) {
+                themeIcon.classList.remove('fa-moon');
+                themeIcon.classList.add('fa-sun');
+            } else {
+                // Si estamos en modo claro (default), mostramos la LUNA para ir a oscuro
+                themeIcon.classList.remove('fa-sun');
+                themeIcon.classList.add('fa-moon');
+            }
+        });
+
+
+        // --- TUS DATOS ---
+        const clients = [
+            {
+                name: "BANCO ESTADO",
+                dashboardUrl: "#", 
+                awsUrl: "https://d-9067b37c56.awsapps.com/start/#/console?account_id=279344395870&role_name=NocOperator&referrer=accessPortal",
+                metrics: [
+                    "https://app.datadoghq.com/graph/embed?token=cfacbc8efe122784375f7547214936d5fceb680b616788d768a331d99d785d33&height=300&width=600&legend=false",
+                    "https://app.datadoghq.com/graph/embed?token=7aff1d992b2e3c3bd189708035cfee0c1ab21747f965259036761505ecdd0564&height=300&width=600&legend=false"
+                ]
+            },
+            {
+                name: "BANCO DE CHILE",
+                dashboardUrl: "#",
+                awsUrl: "https://d-9067b37c56.awsapps.com/start/#/console?account_id=283485003169&role_name=NocOperator&referrer=accessPortal",
+                metrics: [
+                    "https://app.datadoghq.com/graph/embed?token=c100e5bd05141da25ba2741fc5564661527a5e723c39c8d39e7cecc647f61fc6&height=300&width=600&legend=false",
+                    "https://app.datadoghq.com/graph/embed?token=a05f21dc681f675cba7c9bb209fd7b3987bd496649305de0c472972a0eb86626&height=300&width=600&legend=false"
+                ]
+            },
+            {
+                name: "BTG",
+                dashboardUrl: "#",
+                awsUrl: "https://d-9067b37c56.awsapps.com/start/#/console?account_id=805199280860&role_name=NocOperator&referrer=accessPortal",
+                metrics: [
+                    "https://app.datadoghq.com/graph/embed?token=668e5039f08ddc7b0a74b255f1efbe20b79cb80055d55cc696d213d6594663e0&height=300&width=600&legend=false",
+                    "https://app.datadoghq.com/graph/embed?token=21295d88996888fd725db4c2aa0335c5e391c4b77af615969e4485127e185efa&height=300&width=600&legend=false"
+                ]
+            },
+            {
+                name: "CENCOSUD",
+                dashboardUrl: "#",
+                awsUrl: "https://d-9067b37c56.awsapps.com/start/#/console?account_id=551307896411&role_name=NocOperator&referrer=accessPortal",
+                metrics: [
+                    "https://app.datadoghq.com/graph/embed?token=8b0aebc978fad96c455873cecb2fed1ae02ee51a396f3026aeeb54c692008e38&height=300&width=600&legend=false",
+                    "https://app.datadoghq.com/graph/embed?token=30a144c0e47b6ad13d2f6f55c118fd56180e81261ca32c88269375d135a31f51&height=300&width=600&legend=false"
+                ]
+            },
+            {
+                name: "CORNERSTONE",
+                dashboardUrl: "https://app.datadoghq.com/dashboard/f8w-8cs-mj4/obs-noc-v107?fromUser=false&refresh_mode=sliding&tile_focus=2751579728247955&from_ts=1765312448423&to_ts=1765326848423&live=true",
+                awsUrl: "https://d-9067b37c56.awsapps.com/start/#/console?account_id=384036622672&role_name=NocOperator&referrer=accessPortal",
+                metrics: [
+                    "https://app.datadoghq.com/graph/embed?token=3704a031d4fe31379ea9543e272456db79c8ea43676e5997eaa03bc15dc1930d&height=300&width=600&legend=false",
+                    "https://app.datadoghq.com/graph/embed?token=fd000a6946a1281fc6afa18ec0ecb2dbf91a63a0354a5957fc7c585b4bb5068c&height=300&width=600&legend=false"
+                ]
+            },
+            {
+                name: "DALE",
+                dashboardUrl: "https://app.datadoghq.com/dashboard/f8w-8cs-mj4/obs-noc-v107?fromUser=false&refresh_mode=sliding&tile_focus=2751579728247955&from_ts=1765312448423&to_ts=1765326848423&live=true",
+                awsUrl: "https://d-9067b37c56.awsapps.com/start/#/console?account_id=045935838298&role_name=NocOperator&referrer=accessPortal",
+                metrics: [
+                    "https://app.datadoghq.com/graph/embed?token=f0252dc555be81d43483d434c194c4c5ce4acb063dcb38a03ed6c6aecfa4f84b&height=300&width=600&legend=false",
+                    "https://app.datadoghq.com/graph/embed?token=fd000a6946a1281fc6afa18ec0ecb2dbf91a63a0354a5957fc7c585b4bb5068c&height=300&width=600&legend=false"
+                ]
+            },
+            {
+                name: "DEUNA",
+                dashboardUrl: "https://app.datadoghq.com/dashboard/f8w-8cs-mj4/obs-noc-v107?fromUser=false&refresh_mode=sliding&tile_focus=2751579728247955&from_ts=1765312448423&to_ts=1765326848423&live=true",
+                awsUrl: "https://d-9067b37c56.awsapps.com/start/#/console?account_id=150088468172&role_name=NocOperator&referrer=accessPortal",
+                metrics: [
+                    "https://app.datadoghq.com/graph/embed?token=aef19c872af5893b0fcb5ba5f104188f80ec3c7a2dd8c240fd63a6027764df34&height=300&width=600&legend=false",
+                    "https://app.datadoghq.com/graph/embed?token=ac9aca73c1e19e17237abe29ab96584f914305a9bbf653d917b9acd4dde8b76e&height=300&width=600&legend=false"
+                ]
+            },{
+                name: "TOWERBANK",
+                dashboardUrl: "https://app.datadoghq.com/dashboard/f8w-8cs-mj4/obs-noc-v107?fromUser=false&refresh_mode=sliding&tile_focus=2751579728247955&from_ts=1765312448423&to_ts=1765326848423&live=true",
+                awsUrl: "https://d-9067b37c56.awsapps.com/start/#/console?account_id=460287290057&role_name=NocOperator&referrer=accessPortal",
+                metrics: [
+                    "https://app.datadoghq.com/graph/embed?token=4dc9dab633caff189f5f5307772637971f17e4c6a17de44cf6e0fd521297dc19&height=300&width=600&legend=false",
+                    "https://app.datadoghq.com/graph/embed?token=af32c4d50af3dacdf8af0bd4795a2302885751d593293d1313a9caabb704abef&height=300&width=600&legend=false"
+                ]
+            },
+            {
+                name: "LIBERTAD",
+                dashboardUrl: "#", 
+                metrics: [] // Sin métricas, solo para lista
+            }
+            
+        ];
+
+        const container = document.getElementById('dashboard');
+        
+        const menuIds = ['menu-aws', 'menu-opensearch', 'menu-grafana', 'menu-argo', 'menu-prometheus'];
+
+        // --- FILTROS DE CLIENTES POR MENÚ ---
+        const menuFilters = {
+            'menu-argo': ["BANCO ESTADO", "BANCO DE CHILE", "DEUNA"],
+            'menu-prometheus': ["BANCO ESTADO", "BANCO DE CHILE"],
+            'menu-grafana': ["DEUNA", "BANCO ESTADO", "LIBERTAD", "BANCO DE CHILE"]
+            // menu-aws y menu-opensearch muestran todos
+        };
+
+        clients.forEach(client => {
+            // --- 1. GRID PRINCIPAL (Solo clientes con métricas) ---
+            if(client.metrics && client.metrics.length > 0) {
+                const card = document.createElement('div');
+                card.className = 'client-card';
+
+                const title = document.createElement('div');
+                title.className = 'client-name';
+                const titleLink = document.createElement('a');
+                titleLink.href = client.dashboardUrl;
+                titleLink.textContent = client.name;
+                titleLink.target = "_blank";
+                title.appendChild(titleLink);
+                card.appendChild(title);
+
+                client.metrics.forEach(originalUrl => {
+                    const wrapper = document.createElement('div');
+                    wrapper.className = 'metric-wrapper';
+                    const iframe = document.createElement('iframe');
+                    iframe.src = originalUrl;
+                    const link = document.createElement('a');
+                    link.href = client.dashboardUrl;
+                    link.className = 'click-overlay';
+                    link.target = "_blank";
+                    wrapper.appendChild(iframe);
+                    wrapper.appendChild(link);
+                    card.appendChild(wrapper);
+                });
+                container.appendChild(card);
+            }
+
+            // --- 2. GENERACIÓN DE LINKS PARA LOS MENÚS DESPLEGABLES ---
+            menuIds.forEach(id => {
+                const menuContainer = document.getElementById(id);
+                
+                if(menuContainer) {
+                    // VERIFICACIÓN DE FILTRO
+                    if (menuFilters[id] && !menuFilters[id].includes(client.name)) {
+                        return; 
+                    }
+
+                    // Creamos el link
+                    const menuLink = document.createElement('a');
+                    
+                    // Lógica de URL para AWS
+                    if (id === 'menu-aws' && client.awsUrl) {
+                        menuLink.href = client.awsUrl;
+                    } else {
+                        menuLink.href = client.dashboardUrl;
+                    }
+
+                    menuLink.className = 'submenu-link'; 
+                    menuLink.target = "_blank";
+                    menuLink.innerHTML = `<i class="fas fa-circle"></i> <span>${client.name}</span>`;
+                    
+                    menuContainer.appendChild(menuLink);
+                }
+            });
+        });
+    </script>
+</body>
+</html>
